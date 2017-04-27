@@ -24,6 +24,11 @@
     logging && console.log('[tractivity] ' + msg);
   };
 
+  var getElementId = function(el) {
+    // allow overriding via data-tracked-id attribute
+    return el.dataset.trackedId || el.id || '';
+  };
+
   var trackedElementClass = 'tracked',
       trackedElements = [],
       trackedElementsById = {};
@@ -31,9 +36,14 @@
   var parse = function(node) {
     var a = node.querySelectorAll(trackedElementClass);
     a.forEach(function(el) {
-      // TODO
+      var elId = getElementId(el);
+      // if we haven't seen this tracked element before
+      if(!trackedElementsById[elId]) {
+        trackedElementsById[elId] = el;
+      }
     })
-  }
+  };
+  // TODO garbage collect when tracked elements are removed from the document.
 
   root.tractivity = tractivity;
 
@@ -47,17 +57,12 @@
     if(options) {
       logging = options.logging;
       trackedElementClass = options.trackedElementClass || 'tracked';
+      scrollEndedTimeout = options.scrollEndedTimeout || 500;
     }
 
     var tracked = function(el) {
       return el.classList.contains(trackedElementClass);
     };
-
-    var getElementId = function(el) {
-      // allow overriding via data-tracked-id attribute
-      return el.dataset.trackedId || el.id || '';
-    };
-
 
     var getElementInfo = function(el) {
       return el.nodeName + ' id=' + getElementId(el);
@@ -79,12 +84,29 @@
         elInfo = getElementInfo(e.target);
         log('mouse down on element ' + elInfo +  ' after ' + performance.now() + 'ms');
       }
-    }
+    };
+
+    var scrollEndedTimer,
+        scrollEndedTimeout = 500,
+        whenScrollEnded = function() {
+          log('scroll ended');
+        };
+
+    var onScroll = function(e) {
+      if(scrollEndedTimer !== null) {
+        clearTimeout(scrollEndedTimer);
+      }
+      scrollEndedTimer = setTimeout(whenScrollEnded, scrollEndedTimeout);
+    };
 
     document.addEventListener('mouseover', onMouseOver);
     document.addEventListener('mousedown', onMouseDown);
 
+    window.addEventListener('scroll', onScroll);
+
     log('enabled');
+
+    parse(document.body);
   }
 
 }.call(this));
