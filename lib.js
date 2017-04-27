@@ -49,8 +49,6 @@
       trackedElementClass = options.trackedElementClass || 'tracked';
     }
 
-    log('enabled');
-
     var tracked = function(el) {
       return el.classList.contains(trackedElementClass);
     };
@@ -85,6 +83,8 @@
 
     document.addEventListener('mouseover', onMouseOver);
     document.addEventListener('mousedown', onMouseDown);
+
+    log('enabled');
   }
 
 }.call(this));
