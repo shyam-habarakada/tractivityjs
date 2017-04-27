@@ -2,13 +2,20 @@
 <head>
   <title>TractivityJS</title>
   <style>
+  body {
+    font-family: Verdana;
+  }
   div {
     background-color: #eee;
     padding: 4px;
     margin: 8px;
+    border: 1px dotted #ccc;
   }
   div:hover {
-    border: 1px dotted #faa;
+    border: 1px solid #f88;
+  }
+  .tracked {
+    background-color:#ccc;
   }
   </style>
   <script type='text/javascript' src='lib.js'></script>
@@ -18,10 +25,15 @@
 <div id='d1'>d1</div>
 <div>
   <div id='d21'>
-    <div id='d211' data-tracked='true'>d2.1.1</div>
+    <div id='d211' class='tracked'>d2.1.1 (tracked)</div>
     <div id='d212'>d2.1.2</div>
+    <div id='d213' class='tracked'>d2.1.3 (tracked)
+      <div id='d2131'>d2.1.3.1</div>
+      <div id='d2132' class='tracked'>d2.1.3.2 (tracked)</div>
+      <div id='d2133'>d2.1.3.3</div>
+    </div>
   </div>
-  <div id='d22' data-tracked='true' data-tracked-id='D22'>d2.2</div>
+  <div id='d22' class='tracked' data-tracked-id='D22'>d2.2 (tracked)</div>
 </div>
 <!-- This is a comment node -->
 <div id='d3'>d3</div>

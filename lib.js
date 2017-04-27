@@ -1,21 +1,15 @@
 (function() {
 
+  'use strict';
+
   // Template forked from underscorejs.
   // See https://github.com/jashkenas/underscore/blob/master/underscore.js
 
-  'use strict';
-
-  // window, in the browser. no server support.
+  // Root is window. No server support.
   var root = this;
 
   // TODO conflict detection
   var previousTractivity = root.Tractivity;
-
-  var logging = false;
-
-  var log = function(msg) {
-    logging && console.log('[tractivity] ' + msg);
-  };
 
   // Create a safe reference to the Tracktivity object for use below.
   var tractivity = function(obj) {
@@ -24,49 +18,68 @@
     this.tractivityWrapped = obj;
   };
 
+  var logging = false;
+
+  var log = function(msg) {
+    logging && console.log('[tractivity] ' + msg);
+  };
+
+  var trackedElementClass = 'tracked',
+      trackedElements = [],
+      trackedElementsById = {};
+
+  var parse = function(node) {
+    var a = node.querySelectorAll(trackedElementClass);
+    a.forEach(function(el) {
+      // TODO
+    })
+  }
+
   root.tractivity = tractivity;
 
   tractivity.VERSION = '0.1.0';
 
+  /*
+   Public Interface
+   */
+
   tractivity.enable = function(options) {
     if(options) {
       logging = options.logging;
+      trackedElementClass = options.trackedElementClass || 'tracked';
     }
 
     log('enabled');
 
+    var tracked = function(el) {
+      return el.classList.contains(trackedElementClass);
+    };
+
+    var getElementId = function(el) {
+      // allow overriding via data-tracked-id attribute
+      return el.dataset.trackedId || el.id || '';
+    };
+
+
     var getElementInfo = function(el) {
-      var s;
-      if(el) {
-        s = el.nodeName;
-        if(el.dataset.trackedId) {
-          s = s + ' id=' + el.dataset.trackedId;
-        } else {
-          if(el.id) {
-            s = s + ' id=' + el.id;
-          }
-        };
-      } else {
-        s = 'unknown';
-      }
-      return s;
+      return el.nodeName + ' id=' + getElementId(el);
     };
 
     var onMouseOver = function(e) {
       var el = e.target,
           elInfo;
-      if(el.dataset.tracked === 'true') {
+      if(tracked(el)) {
         elInfo = getElementInfo(e.target);
-        log('mouse moved over element ' + elInfo + ' (' + e.screenX + ',' + e.screenY + ')');
+        log('mouse moved over element ' + elInfo + ' after ' + performance.now() + 'ms');
       }
     };
 
     var onMouseDown = function(e) {
       var el = e.target,
           elInfo;
-      if(el.dataset.tracked === 'true') {
+      if(tracked(el)) {
         elInfo = getElementInfo(e.target);
-        log('mouse down on element ' + elInfo + ' (' + e.screenX + ',' + e.screenY + ')');
+        log('mouse down on element ' + elInfo +  ' after ' + performance.now() + 'ms');
       }
     }
 
