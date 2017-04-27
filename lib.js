@@ -18,7 +18,16 @@
     this.tractivityWrapped = obj;
   };
 
-  var logging = false;
+  // internal state
+  var DEFAULT_LOGGING = false,
+      DEFAULT_SCROLL_TIMEOUT = 1000,
+      DEFAULT_TRACKED_CLASS = 'tracked',
+      logging = DEFAULT_LOGGING,
+      trackedElementClass = DEFAULT_TRACKED_CLASS,
+      trackedElements = [],
+      trackedElementsById = {},
+      scrollEndedTimer,
+      scrollEndedTimeout = DEFAULT_SCROLL_TIMEOUT;
 
   var log = function(msg) {
     logging && console.log('[tractivity] ' + msg);
@@ -29,21 +38,32 @@
     return el.dataset.trackedId || el.id || '';
   };
 
-  var trackedElementClass = 'tracked',
-      trackedElements = [],
-      trackedElementsById = {};
+  var isElementVisible = function(el) {
+    var rect = el.getBoundingClientRect();
+    return rect.top <= window.innerHeight && rect.bottom > 0;
+  };
 
   var parse = function(node) {
-    var a = node.querySelectorAll(trackedElementClass);
+    var a = node.querySelectorAll('.' + trackedElementClass);
     a.forEach(function(el) {
       var elId = getElementId(el);
       // if we haven't seen this tracked element before
       if(!trackedElementsById[elId]) {
+        trackedElements.push(el);
         trackedElementsById[elId] = el;
       }
     })
   };
   // TODO garbage collect when tracked elements are removed from the document.
+
+  var whenScrollEnded = function() {
+    log('scroll ended');
+    trackedElements.forEach(function(el) {
+      if(isElementVisible(el)) {
+        log('element ' + getElementId(el) + ' seen after ' + performance.now() + 'ms');
+      }
+    })
+  };
 
   root.tractivity = tractivity;
 
@@ -55,9 +75,9 @@
 
   tractivity.enable = function(options) {
     if(options) {
-      logging = options.logging;
-      trackedElementClass = options.trackedElementClass || 'tracked';
-      scrollEndedTimeout = options.scrollEndedTimeout || 500;
+      logging = options.logging || DEFAULT_LOGGING;
+      trackedElementClass = options.trackedElementClass || DEFAULT_TRACKED_CLASS;
+      scrollEndedTimeout = options.scrollEndedTimeout || DEFAULT_SCROLL_TIMEOUT;
     }
 
     var tracked = function(el) {
@@ -86,12 +106,6 @@
       }
     };
 
-    var scrollEndedTimer,
-        scrollEndedTimeout = 500,
-        whenScrollEnded = function() {
-          log('scroll ended');
-        };
-
     var onScroll = function(e) {
       if(scrollEndedTimer !== null) {
         clearTimeout(scrollEndedTimer);
@@ -107,6 +121,8 @@
     log('enabled');
 
     parse(document.body);
+
+    whenScrollEnded();
   }
 
 }.call(this));
