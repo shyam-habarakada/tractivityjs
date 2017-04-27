@@ -28,11 +28,11 @@
 
   tractivity.VERSION = '0.1.0';
 
-  tractivity.enableLogging = function(enable) {
-    logging = enable;
-  };
+  tractivity.enable = function(options) {
+    if(options) {
+      logging = options.logging;
+    }
 
-  tractivity.enable = function() {
     log('enabled');
 
     var getElementInfo = function(el) {
