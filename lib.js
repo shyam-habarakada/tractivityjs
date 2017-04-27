@@ -3,8 +3,10 @@
   // Template forked from underscorejs.
   // See https://github.com/jashkenas/underscore/blob/master/underscore.js
 
+  "use strict";
+
   // window, in the browser. no server support.
-  var root = this || {};
+  var root = this;
 
   // TODO conflict detection
   var previousTractivity = root.Tractivity;
@@ -22,11 +24,10 @@
 
   root.tractivity = tractivity;
 
-  // Current version.
   tractivity.VERSION = '0.1.0';
 
   tractivity.enable = function() {
     log('enabled');
   }
 
-}());
+}.call(this));
