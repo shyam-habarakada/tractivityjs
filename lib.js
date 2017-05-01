@@ -33,12 +33,20 @@
     logging && console.log('[tractivity] ' + msg);
   };
 
+  var getElementInfo = function(el) {
+    return el.nodeName + ' id=' + getElementId(el);
+  };
+
   var getElementId = function(el) {
     // allow overriding via data-tracked-id attribute
     return el.dataset.trackedId || el.id || '';
   };
 
-  var isElementVisible = function(el) {
+  var tracked = function(el) {
+    return el.classList.contains(trackedElementClass);
+  };
+
+  var elementVisible = function(el) {
     var rect = el.getBoundingClientRect();
     return rect.top <= window.innerHeight && rect.bottom > 0;
   };
@@ -59,7 +67,7 @@
   var whenScrollEnded = function() {
     log('scroll ended');
     trackedElements.forEach(function(el) {
-      if(isElementVisible(el)) {
+      if(elementVisible(el)) {
         log('element ' + getElementId(el) + ' seen after ' + performance.now() + 'ms');
       }
     })
@@ -69,24 +77,19 @@
 
   tractivity.VERSION = '0.1.0';
 
-  /*
-   Public Interface
+  /* Enable tractivityjs. Available options are,
+   *
+   * logging: true turns on console logging
+   * trackedElementClass: string override the default CSS class that marks trackable elements
+   * scrollEndedTimeout: delay before an element is considered as seen
+   *
    */
-
   tractivity.enable = function(options) {
     if(options) {
       logging = options.logging || DEFAULT_LOGGING;
       trackedElementClass = options.trackedElementClass || DEFAULT_TRACKED_CLASS;
       scrollEndedTimeout = options.scrollEndedTimeout || DEFAULT_SCROLL_TIMEOUT;
     }
-
-    var tracked = function(el) {
-      return el.classList.contains(trackedElementClass);
-    };
-
-    var getElementInfo = function(el) {
-      return el.nodeName + ' id=' + getElementId(el);
-    };
 
     var onMouseOver = function(e) {
       var el = e.target,
@@ -121,7 +124,18 @@
     log('enabled');
 
     parse(document.body);
+    whenScrollEnded();
+  }
 
+  /* Parse a newly added DOM sub-tree for trackable elements. A node value of
+   * null will cause the entire DOM tree to be parsed.
+   */
+  tractivity.parse = function(node) {
+    if(!node) {
+      node = document.body;
+    }
+    log('parsing ' + getElementInfo(node));
+    parse(node);
     whenScrollEnded();
   }
 
